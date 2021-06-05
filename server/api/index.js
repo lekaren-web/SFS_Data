@@ -1,7 +1,7 @@
 const router = require('express').Router()
 
-router.use('/datatable', require('./table'))
-// router.use('/robots', require('./robots'))
+router.use('/data', require('./table'))
+
 
 router.use((req, res, next) => {
   const err = new Error('API route not found!')
