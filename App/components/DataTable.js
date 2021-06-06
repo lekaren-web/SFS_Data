@@ -2,8 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { Component } from 'react'
 import axios from 'axios'
-import { render }from 'react-dom'
-
+import { Link } from 'react-router-dom'
 
 class DataTable extends Component {
     constructor(props) {
@@ -11,15 +10,18 @@ class DataTable extends Component {
        this.state = {
            dataForTable: [],
            head: [],
+           page: 1,
            creditorName: ''
        }
         this.renderData = this.renderData.bind(this)
         this.renderheader = this.renderheader.bind(this)
         this.balanceCounter = this.balanceCounter.bind(this)
         this.handleSubmit = this.handleSubmit.bind(this)
+        this.getData = this.getData.bind(this)
 
     }
-    async componentDidMount(){
+
+    getData () {
         await axios.get('/api/data').then(res => {
             const dataForTable = res.data;
             this.setState({ dataForTable });
@@ -27,9 +29,13 @@ class DataTable extends Component {
         const head =  Object.keys(this.state.dataForTable[0])
         this.setState({ head })
     }
+    componentDidMount(){
+       this.getData()
+    }
 
-    componentDidUpdate() {
-
+    componentDidUpdate (prevProps, prevState){
+        const newState = this.state
+        if (prevState.page !== newState.page) this.getData();
     }
     
     renderData(){
@@ -48,16 +54,16 @@ class DataTable extends Component {
     
     async handleSubmit(event){
         event.preventDefault();
-        await axios.post('/api/data/create', {creditorName: "BANK2"}).then(res => {
+        await axios.post('/api/data/create', {creditorName: "BANK2", }).then(res => {
             const dataForTable = res.data;
+            this.setState({ dataForTable });
+
             // this.setState({ creditorName });
         })
-        //axios.post(shit you wanna add) route
         // this.state.dataForTable.push([{creditorName}])
         console.log(this.state.dataForTable.length)
     }
     renderheader(){
-        const { handleSubmit } = this;
         return this.state.head.map((key, index) => {
             switch(key){
                 case "id":
@@ -92,7 +98,7 @@ class DataTable extends Component {
     }
 
     render(){ 
-        const {handleSubmit} = this
+        const { handleSubmit } = this
         return(
         <Container>
             <Table>
@@ -128,7 +134,7 @@ class DataTable extends Component {
                               x.style.display = "none";
                             }
                           }}> Add Debt</button>
-            <button className ="button2" onClick={handleSubmit}> Remove Debt</button>
+            <button className ="button2" onClick={handleSubmit}>Remove Debt</button>
             <p className='total'> Total {`$${this.balanceCounter().toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`}
              </p>
              <div>
