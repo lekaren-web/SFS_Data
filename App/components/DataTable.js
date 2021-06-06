@@ -2,16 +2,22 @@ import React from 'react'
 import styled from 'styled-components'
 import { Component } from 'react'
 import axios from 'axios'
+import { render }from 'react-dom'
+
+
 class DataTable extends Component {
     constructor(props) {
         super(props)
        this.state = {
            dataForTable: [],
-           head: []
+           head: [],
+           creditorName: ''
        }
         this.renderData = this.renderData.bind(this)
         this.renderheader = this.renderheader.bind(this)
         this.balanceCounter = this.balanceCounter.bind(this)
+        this.handleSubmit = this.handleSubmit.bind(this)
+
     }
     async componentDidMount(){
         await axios.get('/api/data').then(res => {
@@ -21,11 +27,16 @@ class DataTable extends Component {
         const head =  Object.keys(this.state.dataForTable[0])
         this.setState({ head })
     }
+
+    componentDidUpdate() {
+
+    }
+    
     renderData(){
         return this.state.dataForTable.map((data) => {
         return (
             <tr key={data.id}>
-              <input type ='checkbox' /><td>{data.creditorName}</td>
+              <input type ='checkbox' id='checkboxes'/><td>{data.creditorName}</td>
                <td>{data.firstName}</td>
                <td>{data.lastName}</td>
                <td>{data.minPaymentPercentage}</td>
@@ -34,8 +45,19 @@ class DataTable extends Component {
         )
         })
     }
-
+    
+    async handleSubmit(event){
+        event.preventDefault();
+        await axios.post('/api/data/create', {creditorName: "BANK2"}).then(res => {
+            const dataForTable = res.data;
+            // this.setState({ creditorName });
+        })
+        //axios.post(shit you wanna add) route
+        // this.state.dataForTable.push([{creditorName}])
+        console.log(this.state.dataForTable.length)
+    }
     renderheader(){
+        const { handleSubmit } = this;
         return this.state.head.map((key, index) => {
             switch(key){
                 case "id":
@@ -63,32 +85,55 @@ class DataTable extends Component {
     balanceCounter(){
     let counter = 0; 
     this.state.dataForTable.map((elem)=>{
-        counter += parseInt(elem.balance)
+        counter += Number(elem.balance)
     })
-return counter
+    console.log(counter)
+    return counter
     }
+
     render(){ 
+        const {handleSubmit} = this
         return(
         <Container>
             <Table>
-        <table id='data'>
-
-            <tbody>
+        <table>
+            <tbody id='data'>
                 <tr className ='header'>{this.renderheader()}</tr>
                 {this.renderData()}
             </tbody>
             <td className='empty'></td>
-            <button className ="button1"> Add Debt</button>
-            <button className ="button2"> Remove Debt</button>
-            
             </table>
+            <form className="popup" id="popup" >
+          <div>
+            <div>
+              <label htmlFor="projectTitle">Creditor Name: </label>
+              <input name="title"  placeholder="Creditor"/>
+            </div>
+            <div>
+              <label htmlFor="projectDeadline">Min Pay %: </label>
+              <input
+                name="deadline"
+                placeholder="Minimum Payment %"
+              />
+            </div>
+            <button type="submit">Submit</button>
+           
+          </div>
+        </form>
+            <button className ="button1" onClick={function myFunction() {
+                            var x = document.getElementById("popup");
+                            if (x.style.display === "none") {
+                              x.style.display = "block";
+                            } else {
+                              x.style.display = "none";
+                            }
+                          }}> Add Debt</button>
+            <button className ="button2" onClick={handleSubmit}> Remove Debt</button>
             <p className='total'> Total {`$${this.balanceCounter().toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`}
              </p>
              <div>
              <p className='rowcount'> Total Row Count: {this.state.dataForTable.length} </p>
-             
              </div>
-
             </Table>
             
         </Container>
@@ -103,6 +148,7 @@ justify-content: center;
 align-content: center;
 margin: 200px;
 flex-direction: column;
+
 `
 
 
@@ -110,6 +156,8 @@ const Table = styled.div`
 // background-color: lightblue;
 margin-left: auto;
 margin-right: auto;
+// flex-direction: column;
+
 button { 
     cursor: pointer;
 }
@@ -128,7 +176,7 @@ text-align: center;
 }
 
 table{
-    width 100%;
+    width: 100%;
 }
 
 .rowcount {

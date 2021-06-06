@@ -44,6 +44,19 @@ body {
   .first {
     border: 1px solid white;
   }
-
+  .popup {
+    color: white;
+    /* background-image: radial-gradient(rgba(84, 2, 249, 0.673), rgb(0, 0, 0)); */
+    background-color: black;
+    display:none;
+    position: fixed;
+    top: 2;
+    left: 0;
+    justify-content: center;
+    border: 1px solid #f1f1f1;
+    z-index: 9;
+    width: 200px;
+    padding: 20px;
+  }
   
   
