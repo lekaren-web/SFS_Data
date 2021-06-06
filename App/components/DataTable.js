@@ -1,120 +1,42 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Component } from 'react'
-
+import axios from 'axios'
 class DataTable extends Component {
     constructor(props) {
         super(props)
-        this.state = {
-            dataForTable:[
-                {
-                  "id": 1,
-                  "creditorName": "CBNA",
-                  "firstName": "Suman",
-                  "lastName": "Tester79",
-                  "minPaymentPercentage": "2.00",
-                  "balance": "1363.00"
-                },
-                {
-                  "id": 2,
-                  "creditorName": "AMEX",
-                  "firstName": "Suman",
-                  "lastName": "Tester79",
-                  "minPaymentPercentage": "2.00",
-                  "balance": "2763.00"
-                },
-                {
-                  "id": 3,
-                  "creditorName": "AMEX",
-                  "firstName": "Suman",
-                  "lastName": "Tester79",
-                  "minPaymentPercentage": "2.00",
-                  "balance": "429.00"
-                },
-                {
-                  "id": 4,
-                  "creditorName": "AMEX",
-                  "firstName": "Suman",
-                  "lastName": "Tester79",
-                  "minPaymentPercentage": "2.00",
-                  "balance": "1363.00"
-                },
-                {
-                  "id": 5,
-                  "creditorName": "DISCOVERBANK",
-                  "firstName": "Suman",
-                  "lastName": "Tester79",
-                  "minPaymentPercentage": "2.00",
-                  "balance": "2644.00"
-                },
-                {
-                  "id": 6,
-                  "creditorName": "CAPITAL ONE",
-                  "firstName": "Suman",
-                  "lastName": "Tester79",
-                  "minPaymentPercentage": "4.00",
-                  "balance": "5464.00"
-                },
-                {
-                  "id": 7,
-                  "creditorName": "CAPITAL ONE",
-                  "firstName": "Suman",
-                  "lastName": "Tester79",
-                  "minPaymentPercentage": "4.00",
-                  "balance": "2345.00"
-                },
-                {
-                  "id": 8,
-                  "creditorName": "CAPITAL ONE",
-                  "firstName": "Suman",
-                  "lastName": "Tester79",
-                  "minPaymentPercentage": "4.00",
-                  "balance": "836.00"
-                },
-                {
-                  "id": 9,
-                  "creditorName": "CBNA",
-                  "firstName": "Suman",
-                  "lastName": "Tester79",
-                  "minPaymentPercentage": "3.50",
-                  "balance": "687.00"
-                },
-                {
-                  "id": 10,
-                  "creditorName": "CBNA",
-                  "firstName": "Suman",
-                  "lastName": "Tester79",
-                  "minPaymentPercentage": "3.50",
-                  "balance": "235.00"
-                }
-              ]
-            }
+       this.state = {
+           dataForTable: [],
+           head: []
+       }
         this.renderData = this.renderData.bind(this)
         this.renderheader = this.renderheader.bind(this)
         this.balanceCounter = this.balanceCounter.bind(this)
-
-        
+    }
+    async componentDidMount(){
+        await axios.get('/api/data').then(res => {
+            const dataForTable = res.data;
+            this.setState({ dataForTable });
+        })
+        const head =  Object.keys(this.state.dataForTable[0])
+        this.setState({ head })
     }
     renderData(){
-        return this.state.dataForTable.map((data, index) => {
-            const {"id": id, "creditorName": Creditor, "firstName": FirstName, "lastName": LastName, "minPaymentPercentage": MinPay, "balance": Balance } = data //here i am deconstructuring
-        
+        return this.state.dataForTable.map((data) => {
         return (
-            <tr key={id}>
-              <input type ='checkbox' /><td>{Creditor}</td>
-               <td>{FirstName}</td>
-               <td>{LastName}</td>
-               <td>{MinPay}</td>
-               <td>{Balance}</td>
+            <tr key={data.id}>
+              <input type ='checkbox' /><td>{data.creditorName}</td>
+               <td>{data.firstName}</td>
+               <td>{data.lastName}</td>
+               <td>{data.minPaymentPercentage}</td>
+               <td>{data.balance}</td>
             </tr>
         )
         })
-    }     
+    }
 
     renderheader(){
-        let head = Object.keys(this.state.dataForTable[0])
-        return head.map((key, index) => {
-
+        return this.state.head.map((key, index) => {
             switch(key){
                 case "id":
                     return <th key={index} className="first"><input type='checkbox' /> </th>; ///select all if clicked
@@ -141,7 +63,6 @@ class DataTable extends Component {
     balanceCounter(){
     let counter = 0; 
     this.state.dataForTable.map((elem)=>{
-        console.log(elem.balance)
         counter += parseInt(elem.balance)
     })
 return counter
@@ -167,6 +88,7 @@ return counter
              <p className='rowcount'> Total Row Count: {this.state.dataForTable.length} </p>
              
              </div>
+
             </Table>
             
         </Container>
@@ -214,11 +136,3 @@ text-align: left;
 
 }
 `
-
-// const Total = styled.div`
-// background-color: lightblue;
-// word-spacing: 400px;
-// height: 20px;
-// width: 40%;
-// text-align: left;
-// `

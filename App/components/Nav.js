@@ -3,8 +3,7 @@ import styled from 'styled-components'
 function Nav() {
     return (
         <Container>
-            <Navi><h4>Strategic Financial Solutions Data Table</h4></Navi>
-        
+            <Navi><h4>Strategic Financial Solutions Data Table</h4></Navi> 
         </Container>
     )
 }
