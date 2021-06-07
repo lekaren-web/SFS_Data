@@ -5,16 +5,11 @@ body {
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-  }
-  
+}
   code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
       monospace;
   }
-  
-
-
-
   
   table, td {
     border: 1px solid grey;
@@ -40,23 +35,28 @@ body {
   th {
   border: 1.5px solid black;
   }
-  
+
   .first {
     border: 1px solid white;
   }
+
   .popup {
     color: white;
     /* background-image: radial-gradient(rgba(84, 2, 249, 0.673), rgb(0, 0, 0)); */
-    background-color: black;
+    background-color: gray;
     display:none;
-    position: fixed;
-    top: 2;
-    left: 0;
+    position:absolute;
+    top: 25%;
+    left: 5%;
     justify-content: center;
     border: 1px solid #f1f1f1;
     z-index: 9;
     width: 200px;
+    height: 320px;
     padding: 20px;
   }
-  
-  
+
+  .popup div {
+    padding: 5px;
+    justify-content: space-between;
+  }

@@ -4,7 +4,8 @@ import { Component } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { useHistory } from "react-router-dom";
-let added = false;
+let clicked = false;
+let selected = false
 class DataTable extends Component {
   constructor(props) {
     super(props);
@@ -12,11 +13,17 @@ class DataTable extends Component {
       dataForTable: [],
       head: [],
       creditorName: "",
-    };
+      balance: "",
+      firstName: "",
+      lastName: "",
+      minPaymentPercentage: ""
+    }
+
     this.renderData = this.renderData.bind(this);
     this.renderheader = this.renderheader.bind(this);
     this.balanceCounter = this.balanceCounter.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleChange = this.handleChange.bind(this);
     this.getData = this.getData.bind(this);
   }
 
@@ -28,30 +35,35 @@ class DataTable extends Component {
     const head = Object.keys(this.state.dataForTable[0]);
     this.setState({ head });
   }
+
   componentDidMount() {
     this.getData();
   }
-  // async componentDidUpdate(prevProps, prevState){
-  //     if (prevState.dataForTable !== this.state.dataForTable && added === true ) {
-  //         console.log('data state has changed.', prevState.dataForTable )
-  //         await axios.get('/api/data').then(res => {
-  //         const dataForTable = res.data;
-  //         this.setState({ dataForTable });
-  //     })
-  //       }
-
-  //     console.log(prevState.dataForTable)
-  //  }
-
+  // componentDidUpdate() {
+  //   this.getData();
+  // }
   deleteData(id) {
-    axios.delete(`api/data/${id}`);
+    let check = document.querySelector('input')
+    check.setAttribute("checked", "true")
+    //  console.log('here')
+    let checks = check.hasAttribute("checked")
+    if(selected && checks){
+    axios.delete(`api/data/${id}`, {id});
+    this.getData()
+    }
+    selected = false
   }
   renderData() {
-    // console.log('here', this.state.dataForTable)
     return this.state.dataForTable.map((data) => {
       return (
         <tr key={data.id}>
-          <input type="checkbox" id="checkboxes" />
+          <input type="checkbox" className="checkboxes" value= {data.id, data.balance} onClick={() => {
+            clicked = true;
+            this.deleteData(data.id)
+            // this.balanceCounter()
+            
+            // console.log('hi', data.id)
+        }} />
           <td>{data.creditorName}</td>
           <td>{data.firstName}</td>
           <td>{data.lastName}</td>
@@ -61,14 +73,26 @@ class DataTable extends Component {
       );
     });
   }
+  toggle() {
+      // let checkboxes = document.querySelectorAll('input[type="checkbox"]');
+      // // console.log('here', document.getElementsByClassName('selectAll'))
+      // for (let checkbox of checkboxes) {
+      //     checkbox.checked= this.checked
+      //     // this.getData()
+      // }
 
-  async handleSubmit(event) {
+}
+  handleChange(event) {
+      this.setState({[event.target.name]:event.target.value});
+
+  }
+  async handleSubmit(event, newdata){
     event.preventDefault();
     await axios
-      .post("/api/data/create", { creditorName: "BANK2" })
+      .post("/api/data/create", this.state)
       .then((res) => {
-        this.getData();
       });
+      this.getData();
   }
   renderheader() {
     return this.state.head.map((key, index) => {
@@ -76,9 +100,10 @@ class DataTable extends Component {
         case "id":
           return (
             <th key={index} className="first">
-              <input type="checkbox" />{" "}
+              <input type="checkbox" className="selectAll" onClick={this.toggle()
+              }/>{" "}
             </th>
-          ); ///select all if clicked
+          );
         case "creditorName":
           return <th key={index}>Creditor</th>;
 
@@ -99,16 +124,26 @@ class DataTable extends Component {
     });
   }
   balanceCounter() {
-    let counter = 0;
-    this.state.dataForTable.map((elem) => {
-      counter += Number(elem.balance);
-    });
-    console.log(counter);
-    return counter;
-  }
+// let allboxes = document.querySelectorAll('input[type="checkbox"]')
+//     let counter = 0;
+//     let boxes = document.getElementsByClassName('checkboxes')
+// if (clicked === true ){
+//   // console.log(clicked, 'after')
+//       for(let i = 0; i < boxes.length; i ++){
+//       let box = boxes[i]
+//       // console.log('HERE',box.value)
+//       counter += parseInt(box.value)
+//       }
+
+// }
+//     return counter;
+  
+document.getElementsByClassName("total").innerText = 'hi'
+}
 
   render() {
-    const { handleSubmit } = this;
+    const { handleSubmit, handleChange, deleteData} = this;
+    const { creditorName, balance, firstName, lastName,minPaymentPercentage } = this.state
     return (
       <Container>
         <Table>
@@ -119,17 +154,29 @@ class DataTable extends Component {
             </tbody>
             <td className="empty"></td>
           </table>
-          <form className="popup" id="popup">
+          <form className="popup" id="popup" onSubmit={handleSubmit}>
             <div>
               <div>
-                <label htmlFor="projectTitle">Creditor Name: </label>
-                <input name="title" placeholder="Creditor" />
+                <label htmlFor="creditorname">Creditor : </label>
+                <input name="creditorName" placeholder="Creditor Name" onChange={handleChange} value={creditorName}/>
               </div>
               <div>
-                <label htmlFor="projectDeadline">Min Pay %: </label>
-                <input name="deadline" placeholder="Minimum Payment %" />
+                <label htmlFor="firstName">First Name: </label>
+                <input name="firstName" placeholder="First Name" onChange={handleChange} value={firstName}/>
               </div>
-              <button type="submit">Submit</button>
+              <div>
+                <label htmlFor="lastName">Last Name: </label>
+                <input name="lastName" placeholder="Last Name" onChange={handleChange} value={lastName}/>
+              </div>
+              <div>
+                <label htmlFor="minPaymentPercentage">Payment %: </label>
+                <input name="minPaymentPercentage" placeholder="Min Pay%" onChange={handleChange} value={minPaymentPercentage}/>
+              </div>
+              <div>
+                <label htmlFor="balance">Balance: </label>
+                <input name="balance" placeholder="Balance" onChange={handleChange} value={balance}/>
+              </div>
+              <button type="submit" >Submit</button>
             </div>
           </form>
           <button
@@ -146,16 +193,19 @@ class DataTable extends Component {
             {" "}
             Add Debt
           </button>
-          <button className="button2" onClick={handleSubmit}>
+          <button className="button2" onClick={() => {
+            selected = true
+            this.getData()
+          }}>
             Remove Debt
           </button>
           <p className="total">
-            {" "}
-            Total{" "}
-            {`$${this.balanceCounter()
+            {/* {" "}
+            Total{" "} */}
+            {/* {`$${this.balanceCounter()
               .toFixed(2)
               .toString()
-              .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`}
+              .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`} */}
           </p>
           <div>
             <p className="rowcount">
