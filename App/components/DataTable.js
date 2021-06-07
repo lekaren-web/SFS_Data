@@ -5,7 +5,11 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 let clicked = false;
-let selected = false
+let selected = false;
+let checkedCount = 0;
+let allChecked = false;
+let id;
+
 class DataTable extends Component {
   constructor(props) {
     super(props);
@@ -16,8 +20,9 @@ class DataTable extends Component {
       balance: "",
       firstName: "",
       lastName: "",
-      minPaymentPercentage: ""
-    }
+      minPaymentPercentage: "",
+      total:"",
+    };
 
     this.renderData = this.renderData.bind(this);
     this.renderheader = this.renderheader.bind(this);
@@ -25,6 +30,8 @@ class DataTable extends Component {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.getData = this.getData.bind(this);
+    this.rowsCount = this.rowsCount.bind(this);
+
   }
 
   async getData() {
@@ -32,38 +39,56 @@ class DataTable extends Component {
       const dataForTable = res.data;
       this.setState({ dataForTable });
     });
+
     const head = Object.keys(this.state.dataForTable[0]);
     this.setState({ head });
   }
 
   componentDidMount() {
     this.getData();
-  }
-  // componentDidUpdate() {
-  //   this.getData();
-  // }
+  }4
+
+  componentDidUpdate(prevState, prevProp){
+if (prevState.dataForTable !== this.state){
+  this.getData
+}}
+
   deleteData(id) {
-    let check = document.querySelector('input')
-    check.setAttribute("checked", "true")
-    //  console.log('here')
-    let checks = check.hasAttribute("checked")
-    if(selected && checks){
-    axios.delete(`api/data/${id}`, {id});
-    this.getData()
+    let checkbox = document.getElementsByClassName("checkboxes")
+   let arr = Array.from(checkbox)
+    for(let i = 0; i < arr.length; i++){
+      let one = arr[i]
+      if (selected) {
+        console.log('hi')
+        axios.delete(`api/data/${id}`, { id });
+        this.getData();
+        selected = false;
+      }
     }
-    selected = false
   }
-  renderData() {
+  rowsCount(){
+    this.setState({rows: this.state.dataForTable.length})
+    return this.state.rows
+  }  
+
+renderData() {
     return this.state.dataForTable.map((data) => {
       return (
         <tr key={data.id}>
-          <input type="checkbox" className="checkboxes" value= {data.id, data.balance} onClick={() => {
-            clicked = true;
-            this.deleteData(data.id)
-            // this.balanceCounter()
-            
-            // console.log('hi', data.id)
-        }} />
+          <input
+            type="checkbox"
+            className="checkboxes"
+            value={(data.id, data.balance)}
+            onClick={() => {
+              checkedCount++;
+              clicked = true;
+              selected = true
+              // if (clicked){
+                id = data.id
+              this.balanceCounter(data.balance);
+              // }
+            }}
+          />
           <td>{data.creditorName}</td>
           <td>{data.firstName}</td>
           <td>{data.lastName}</td>
@@ -74,25 +99,26 @@ class DataTable extends Component {
     });
   }
   toggle() {
-      // let checkboxes = document.querySelectorAll('input[type="checkbox"]');
-      // // console.log('here', document.getElementsByClassName('selectAll'))
-      // for (let checkbox of checkboxes) {
-      //     checkbox.checked= this.checked
-      //     // this.getData()
-      // }
-
-}
-  handleChange(event) {
-      this.setState({[event.target.name]:event.target.value});
-
+    let checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    for (let checkbox of checkboxes) {
+      if (checkbox.hasAttribute("checked")) {
+        checkbox.removeAttribute("checked");
+        allChecked =false
+        clicked = false
+      } else {
+        checkbox.setAttribute("checked", "true");
+        allChecked = true
+      }
+      
+    }
   }
-  async handleSubmit(event, newdata){
+  handleChange(event) {
+    this.setState({ [event.target.name]: event.target.value });
+  }
+  async handleSubmit(event, newdata) {
     event.preventDefault();
-    await axios
-      .post("/api/data/create", this.state)
-      .then((res) => {
-      });
-      this.getData();
+    await axios.post("/api/data/create", this.state).then((res) => {});
+    this.getData();
   }
   renderheader() {
     return this.state.head.map((key, index) => {
@@ -100,8 +126,14 @@ class DataTable extends Component {
         case "id":
           return (
             <th key={index} className="first">
-              <input type="checkbox" className="selectAll" onClick={this.toggle()
-              }/>{" "}
+              <input
+                type="checkbox"
+                className="selectAll"
+                onClick={() => {
+                  this.toggle();
+                  this.balanceCounter()
+                }}
+              />{" "}
             </th>
           );
         case "creditorName":
@@ -123,27 +155,37 @@ class DataTable extends Component {
       }
     });
   }
-  balanceCounter() {
-// let allboxes = document.querySelectorAll('input[type="checkbox"]')
-//     let counter = 0;
-//     let boxes = document.getElementsByClassName('checkboxes')
-// if (clicked === true ){
-//   // console.log(clicked, 'after')
-//       for(let i = 0; i < boxes.length; i ++){
-//       let box = boxes[i]
-//       // console.log('HERE',box.value)
-//       counter += parseInt(box.value)
-//       }
 
-// }
-//     return counter;
-  
-document.getElementsByClassName("total").innerText = 'hi'
-}
+  balanceCounter(data) {
+    let counter = 0;
+    let balance = this.state.dataForTable;
+    for(let i = 0; i < balance.length; i ++){
+      if (allChecked){
+        let newarr = Object.values(balance)
+        newarr.forEach((el) => {
+          counter += parseInt(el.balance)
+
+          this.setState({total: counter.toFixed(2)
+            .toString()
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ",") })
+        })
+      } else if(clicked) {
+        counter += parseInt(data)
+        
+        this.setState({total: counter.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") })
+      } else{
+        counter = 0
+        counter = counter.toFixed(2).toString()
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        this.setState({total: counter})
+      }
+    }
+  }
 
   render() {
-    const { handleSubmit, handleChange, deleteData} = this;
-    const { creditorName, balance, firstName, lastName,minPaymentPercentage } = this.state
+    const { handleSubmit, handleChange, deleteData } = this;
+    const { creditorName, balance, firstName, lastName, minPaymentPercentage, total } =
+      this.state;
     return (
       <Container>
         <Table>
@@ -158,25 +200,50 @@ document.getElementsByClassName("total").innerText = 'hi'
             <div>
               <div>
                 <label htmlFor="creditorname">Creditor : </label>
-                <input name="creditorName" placeholder="Creditor Name" onChange={handleChange} value={creditorName}/>
+                <input
+                  name="creditorName"
+                  placeholder="Creditor Name"
+                  onChange={handleChange}
+                  value={creditorName}
+                />
               </div>
               <div>
                 <label htmlFor="firstName">First Name: </label>
-                <input name="firstName" placeholder="First Name" onChange={handleChange} value={firstName}/>
+                <input
+                  name="firstName"
+                  placeholder="First Name"
+                  onChange={handleChange}
+                  value={firstName}
+                />
               </div>
               <div>
                 <label htmlFor="lastName">Last Name: </label>
-                <input name="lastName" placeholder="Last Name" onChange={handleChange} value={lastName}/>
+                <input
+                  name="lastName"
+                  placeholder="Last Name"
+                  onChange={handleChange}
+                  value={lastName}
+                />
               </div>
               <div>
                 <label htmlFor="minPaymentPercentage">Payment %: </label>
-                <input name="minPaymentPercentage" placeholder="Min Pay%" onChange={handleChange} value={minPaymentPercentage}/>
+                <input
+                  name="minPaymentPercentage"
+                  placeholder="Min Pay%"
+                  onChange={handleChange}
+                  value={minPaymentPercentage}
+                />
               </div>
               <div>
                 <label htmlFor="balance">Balance: </label>
-                <input name="balance" placeholder="Balance" onChange={handleChange} value={balance}/>
+                <input
+                  name="balance"
+                  placeholder="Balance"
+                  onChange={handleChange}
+                  value={balance}
+                />
               </div>
-              <button type="submit" >Submit</button>
+              <button type="submit">Submit</button>
             </div>
           </form>
           <button
@@ -193,25 +260,34 @@ document.getElementsByClassName("total").innerText = 'hi'
             {" "}
             Add Debt
           </button>
-          <button className="button2" onClick={() => {
-            selected = true
-            this.getData()
-          }}>
+          <button
+            className="button2"
+            onClick={() => {
+              selected = true;
+              this.deleteData(id);
+              this.getData();
+            }}
+          >
             Remove Debt
           </button>
+          <div className='maintotal'>
           <p className="total">
-            {/* {" "}
-            Total{" "} */}
-            {/* {`$${this.balanceCounter()
-              .toFixed(2)
-              .toString()
-              .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`} */}
+            {" "}
+            Total{" "}
+            
           </p>
-          <div>
+      <p className="total2">${total}</p>
+      </div>
+          <div className='counts'>
             <p className="rowcount">
               {" "}
               Total Row Count: {this.state.dataForTable.length}{" "}
             </p>
+            <p className="checkedcount">
+              {" "}
+              Checked Rows: {checkedCount}{" "}
+            </p>
+
           </div>
         </Table>
       </Container>
@@ -242,21 +318,46 @@ const Table = styled.div`
   .empty {
     border: 0px;
   }
-
+  .maintotal{
+    // background-color: red;
+    display: flex;
+    flex-direction: row;
+  }
   .total {
-    flex-direction: column;
+    // flex-direction: row;
     // background-color: grey;
-    word-spacing: 350px;
+    // word-spacing: 350px;
     height: 20px;
-    width: 100%;
-    text-align: center;
+    width: 50%;
+    text-align: left;
+  }
+  .total2{
+    // flex-direction: column;
+    // background-color: grey;
+    // word-spacing: 350px;
+    height: 20px;
+    width: 50%;
+    text-align: right;
   }
 
   table {
     width: 100%;
   }
-
+  .counts {
+    // background-color: red;
+    display: flex;
+    flex-direction: row;
+  }
   .rowcount {
     text-align: left;
+    width: 50%;
+    // background-color: grey;
+
+  }
+  .checkedcount {
+    text-align: left;
+    width: 50%;
+    // background-color: grey;
+
   }
 `;
