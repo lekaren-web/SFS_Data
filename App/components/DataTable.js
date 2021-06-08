@@ -21,7 +21,7 @@ class DataTable extends Component {
       firstName: "",
       lastName: "",
       minPaymentPercentage: "",
-      total:"",
+      total:"0.00",
     };
 
     this.renderData = this.renderData.bind(this);
@@ -60,7 +60,7 @@ if (prevState.dataForTable !== this.state){
    let arr = Array.from(checkbox)
     for(let i = 0; i < arr.length; i++){
       if (selected) {
-        console.log('hi')
+        // console.log('hi')
         axios.delete(`api/data/${id}`, { id });
         this.getData();
         selected = false;
@@ -79,14 +79,13 @@ renderData() {
           <input
             type="checkbox"
             className="checkboxes"
-            value={(data.id, data.balance)}
+            value={data.balance}
             onClick={() => {
+              this.balanceCounter(data.balance);
               clicked = true;
               selected = true
                 id = data.id
-                
-              // (console.log(this))
-              this.balanceCounter(data.balance);
+                counter++
               
             }}
           />
@@ -99,29 +98,44 @@ renderData() {
       );
     });
   }
+  deselect(){
+    let checkboxes = document.querySelectorAll('input[type="checkbox"]');
+for(let i=0; i<checkboxes.length; i++){  
+                    if(checkboxes[i].type=='checkbox')  
+                    checkboxes[i].checked=false;  
+                } 
+  }
   toggle() {
+
+
     let checkboxes = document.querySelectorAll('input[type="checkbox"]');
     for (let checkbox of checkboxes) {
-      // checkboxes.removeAttribute("checked");
     checkedCount = this.state.dataForTable.length
+    // for(let i=0; i< checkboxes.length; i++){ 
+    // if(checkboxes[i].type=='checkbox')  
+    // checkboxes[i].checked=true;  
+    // }
+
       if (checkbox.checked) {
+        checkbox.removeAttribute("checked");
         allChecked =false
         clicked = false
-        checkbox.removeAttribute("checked");
-        // checkedCount+= 1
-        if (!checkbox.hasAttribute("checked")) {
+        
+        if (!checkbox.checked) {
         checkedCount = 0
+
       } 
-      } else if (!checkbox.hasAttribute("checked") || checkbox.checked === false && clicked ) {
+      } else if (!checkbox.hasAttribute("checked") || checkbox.checked === false  ) {
         checkbox.setAttribute("checked", "true");
+        // this.deselect()
         allChecked = true
-        // check = true
+
       }
     }
-    // checkboxes.removeAttribute("checked");
   }
   handleChange(event) {
-    this.setState({ [event.target.name]: event.target.value });
+    this.setState({ [event.target.name]: event.target.value })
+    
   }
   async handleSubmit(event, newdata) {
     event.preventDefault();
@@ -165,29 +179,39 @@ renderData() {
   }
 
   balanceCounter(data) {
+clicked = false
     let counter = 0;
+    this.setState({total: counter})
     let balance = this.state.dataForTable;
     for(let i = 0; i < balance.length; i ++){
       if (allChecked){
-        let newarr = Object.values(balance)
+        // let newarr = Object.values(balance)
           counter += Number(balance[i].balance)
           this.setState({total: counter.toFixed(2)
             .toString()
             .replace(/\B(?=(\d{3})+(?!\d))/g, ",") })
-      }  
-      
+
+            if(clicked) {
+              counter += Number(data)
+              this.setState({total: counter.toFixed(2)
+                .toString()
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ",") })
+                clicked = true
+            }  
+      } 
+      // else if(!clicked) {
+      //   counter += Number(data)
+      //   this.setState({total: counter.toFixed(2)
+      //     .toString()
+      //     .replace(/\B(?=(\d{3})+(?!\d))/g, ",") })
+      //     clicked = true
+      // }  
     }
-    if(clicked) {
-      clicked = false
-      counter += parseInt(data)
-      console.log('hi')
-      this.setState({total: counter.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") })
-    }
-      // } else {
+
       counter = counter.toFixed(2).toString()
         .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         this.setState({total: counter})
-    // }
+
     
   }
 
@@ -283,7 +307,7 @@ renderData() {
           <div className='maintotal'>
           <p className="total">
             {" "}
-            Total{" "}
+            Total:{" "}
           </p>
       <p className="total2">${total}</p>
       </div>
