@@ -9,6 +9,7 @@ let selected = false;
 let checkedCount = 0;
 let allChecked = false;
 let id;
+let arr = []
 
 class DataTable extends Component {
   constructor(props) {
@@ -22,6 +23,7 @@ class DataTable extends Component {
       lastName: "",
       minPaymentPercentage: "",
       total:"0.00",
+      checked: [],
     };
 
     this.renderData = this.renderData.bind(this);
@@ -31,6 +33,9 @@ class DataTable extends Component {
     this.handleChange = this.handleChange.bind(this);
     this.getData = this.getData.bind(this);
     this.rowsCount = this.rowsCount.bind(this);
+    this.one = this.one.bind(this);
+    this.checkedFunc = this.checkedFunc.bind(this);
+
 
   }
 
@@ -43,15 +48,27 @@ class DataTable extends Component {
     const head = Object.keys(this.state.dataForTable[0]);
     this.setState({ head });
   }
+  one(){
+    let checkboxes = document.querySelectorAll('input[type="checkbox"]');
+      for (let checkbox of checkboxes) {
+      if (!checkbox.hasAttribute("checked") || checkbox.checked === false  ) {
+        this.setState({total: '0.00'})
+      }}
+  }
 
   componentDidMount() {
     this.getData();
+  // this.balanceCounter()
+
   }
 
   componentDidUpdate(prevState, prevProp){
+
 if (prevState.dataForTable !== this.state){
-  this.getData
+  this.getData;
+  
 }
+
 
 }
 
@@ -67,6 +84,7 @@ if (prevState.dataForTable !== this.state){
       }
     }
   }
+
   rowsCount(){
     this.setState({rows: this.state.dataForTable.length})
     return this.state.rows
@@ -81,13 +99,20 @@ renderData() {
             className="checkboxes"
             value={data.balance}
             onClick={() => {
-              this.balanceCounter(data.balance);
+              this.checkedFunc(data)
               clicked = true;
-              selected = true
-                id = data.id
-                counter++
+              id = data.id
               
-            }}
+              // if(clicked) {this.setState({total: data.balance.toString()
+              //   .replace(/\B(?=(\d{3})+(?!\d))/g, ",")})
+              //   clicked = false
+              //   checkedCount++
+                
+              // }
+      
+          }
+          
+          } 
           />
           <td>{data.creditorName}</td>
           <td>{data.firstName}</td>
@@ -98,6 +123,23 @@ renderData() {
       );
     });
   }
+checkedFunc(data){
+  
+if(!arr.includes(data)){
+    arr.push(data)
+  this.setState({checked: arr})
+  // this.setState({total: data.balance.toString()
+  //   .replace(/\B(?=(\d{3})+(?!\d))/g, ",")})
+} else {
+  arr.pop(data)
+  this.setState({total: '0.00'})
+  this.setState({checked: arr})
+}
+
+
+console.log('in new function', this.state.checked)
+this.balanceCounter()
+}
   deselect(){
     let checkboxes = document.querySelectorAll('input[type="checkbox"]');
 for(let i=0; i<checkboxes.length; i++){  
@@ -106,30 +148,22 @@ for(let i=0; i<checkboxes.length; i++){
                 } 
   }
   toggle() {
-
-
     let checkboxes = document.querySelectorAll('input[type="checkbox"]');
     for (let checkbox of checkboxes) {
-    checkedCount = this.state.dataForTable.length
-    // for(let i=0; i< checkboxes.length; i++){ 
-    // if(checkboxes[i].type=='checkbox')  
-    // checkboxes[i].checked=true;  
-    // }
-
       if (checkbox.checked) {
+        arr.pop(this.state.dataForTable)
+        this.setState({checked: arr})
         checkbox.removeAttribute("checked");
         allChecked =false
         clicked = false
-        
-        if (!checkbox.checked) {
-        checkedCount = 0
-
-      } 
+        this.setState({total: '0.00'})
       } else if (!checkbox.hasAttribute("checked") || checkbox.checked === false  ) {
+        arr.push(this.state.dataForTable)
+        this.setState({checked: arr})
         checkbox.setAttribute("checked", "true");
         // this.deselect()
         allChecked = true
-
+        this.setState({total: this.state.dataForTable.balance })
       }
     }
   }
@@ -179,40 +213,23 @@ for(let i=0; i<checkboxes.length; i++){
   }
 
   balanceCounter(data) {
-clicked = false
-    let counter = 0;
-    this.setState({total: counter})
-    let balance = this.state.dataForTable;
-    for(let i = 0; i < balance.length; i ++){
-      if (allChecked){
-        // let newarr = Object.values(balance)
-          counter += Number(balance[i].balance)
-          this.setState({total: counter.toFixed(2)
-            .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ",") })
-
-            if(clicked) {
-              counter += Number(data)
-              this.setState({total: counter.toFixed(2)
-                .toString()
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ",") })
-                clicked = true
-            }  
-      } 
-      // else if(!clicked) {
-      //   counter += Number(data)
-      //   this.setState({total: counter.toFixed(2)
-      //     .toString()
-      //     .replace(/\B(?=(\d{3})+(?!\d))/g, ",") })
-      //     clicked = true
-      // }  
-    }
-
-      counter = counter.toFixed(2).toString()
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        this.setState({total: counter})
-
-    
+    let newTotal= 0.00
+// console.log('length', this.state.checked.length)
+this.state.checked.forEach((el)=>{
+  console.log('newline')
+   Number(el.balance)
+  console.log(Number(el.balance))
+  if (this.state.checked.length > 1){
+    newTotal += parseInt(el.balance)
+    console.log('heer', newTotal)
+  this.setState({total: newTotal.toFixed(2).toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")})
+  } else if (this.state.checked.length <= 1) {
+    this.setState({total: parseInt(el.balance).toFixed(2).toString()
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ",")})
+  }
+  // this.setState({total: newTotal})
+})
   }
 
   render() {
@@ -226,7 +243,6 @@ clicked = false
             <tbody id="data">
               <tr className="header">{this.renderheader()}</tr>
               {this.renderData()}
-              
             </tbody>
             <td className="empty"></td>
           </table>
@@ -318,7 +334,7 @@ clicked = false
             </p>
             <p className="checkedcount">
               {" "}
-              Checked Rows: {checkedCount}{" "}
+              Checked Rows: {this.state.checked.length}{" "}
             </p>
 
           </div>
