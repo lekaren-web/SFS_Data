@@ -5,17 +5,13 @@ const PORT = 8080
 
 const path = require('path')
 
-// logging middleware
-// Only use logging middleware when not running tests
 
-// body parsing middleware
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-// static middleware
 app.use(express.static(path.join(__dirname, 'public')))
 
-app.use('/api', require('./server/api')) // include our routes!
+app.use('/api', require('./server/api')) 
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'))

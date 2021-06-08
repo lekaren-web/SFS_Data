@@ -58,7 +58,6 @@ class DataTable extends Component {
 
   componentDidMount() {
     this.getData();
-    // this.balanceCounter()
   }
 
   componentDidUpdate(prevState, prevProp) {
@@ -99,12 +98,7 @@ class DataTable extends Component {
               clicked = true;
               id = data.id;
               data1 = data;
-              // if(clicked) {this.setState({total: data.balance.toString()
-              //   .replace(/\B(?=(\d{3})+(?!\d))/g, ",")})
-              //   clicked = false
-              //   checkedCount++
-
-              // }
+            
             }}
           />
           <td>{data.creditorName}</td>
@@ -364,10 +358,8 @@ const Container = styled.div`
 `;
 
 const Table = styled.div`
-  // background-color: lightblue;
   margin-left: auto;
   margin-right: auto;
-  // flex-direction: column;
 
   button {
     cursor: pointer;
@@ -377,22 +369,17 @@ const Table = styled.div`
     border: 0px;
   }
   .maintotal {
-    // background-color: red;
     display: flex;
     flex-direction: row;
   }
   .total {
-    // flex-direction: row;
-    // background-color: grey;
-    // word-spacing: 350px;
+
     height: 20px;
     width: 50%;
     text-align: left;
   }
   .total2 {
-    // flex-direction: column;
-    // background-color: grey;
-    // word-spacing: 350px;
+    
     height: 20px;
     width: 50%;
     text-align: right;
@@ -402,18 +389,15 @@ const Table = styled.div`
     width: 100%;
   }
   .counts {
-    // background-color: red;
     display: flex;
     flex-direction: row;
   }
   .rowcount {
     text-align: left;
     width: 50%;
-    // background-color: grey;
   }
   .checkedcount {
     text-align: left;
     width: 50%;
-    // background-color: grey;
   }
 `;
