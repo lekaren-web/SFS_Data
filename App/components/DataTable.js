@@ -46,18 +46,19 @@ class DataTable extends Component {
 
   componentDidMount() {
     this.getData();
-  }4
+  }
 
   componentDidUpdate(prevState, prevProp){
 if (prevState.dataForTable !== this.state){
   this.getData
-}}
+}
+
+}
 
   deleteData(id) {
     let checkbox = document.getElementsByClassName("checkboxes")
    let arr = Array.from(checkbox)
     for(let i = 0; i < arr.length; i++){
-      let one = arr[i]
       if (selected) {
         console.log('hi')
         axios.delete(`api/data/${id}`, { id });
@@ -80,13 +81,13 @@ renderData() {
             className="checkboxes"
             value={(data.id, data.balance)}
             onClick={() => {
-              checkedCount++;
               clicked = true;
               selected = true
-              // if (clicked){
                 id = data.id
+                
+              // (console.log(this))
               this.balanceCounter(data.balance);
-              // }
+              
             }}
           />
           <td>{data.creditorName}</td>
@@ -101,16 +102,23 @@ renderData() {
   toggle() {
     let checkboxes = document.querySelectorAll('input[type="checkbox"]');
     for (let checkbox of checkboxes) {
-      if (checkbox.hasAttribute("checked")) {
-        checkbox.removeAttribute("checked");
+      // checkboxes.removeAttribute("checked");
+    checkedCount = this.state.dataForTable.length
+      if (checkbox.checked) {
         allChecked =false
         clicked = false
-      } else {
+        checkbox.removeAttribute("checked");
+        // checkedCount+= 1
+        if (!checkbox.hasAttribute("checked")) {
+        checkedCount = 0
+      } 
+      } else if (!checkbox.hasAttribute("checked") || checkbox.checked === false && clicked ) {
         checkbox.setAttribute("checked", "true");
         allChecked = true
+        // check = true
       }
-      
     }
+    // checkboxes.removeAttribute("checked");
   }
   handleChange(event) {
     this.setState({ [event.target.name]: event.target.value });
@@ -162,24 +170,25 @@ renderData() {
     for(let i = 0; i < balance.length; i ++){
       if (allChecked){
         let newarr = Object.values(balance)
-        newarr.forEach((el) => {
-          counter += parseInt(el.balance)
-
+          counter += Number(balance[i].balance)
           this.setState({total: counter.toFixed(2)
             .toString()
             .replace(/\B(?=(\d{3})+(?!\d))/g, ",") })
-        })
-      } else if(clicked) {
-        counter += parseInt(data)
-        
-        this.setState({total: counter.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") })
-      } else{
-        counter = 0
-        counter = counter.toFixed(2).toString()
+      }  
+      
+    }
+    if(clicked) {
+      clicked = false
+      counter += parseInt(data)
+      console.log('hi')
+      this.setState({total: counter.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") })
+    }
+      // } else {
+      counter = counter.toFixed(2).toString()
         .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         this.setState({total: counter})
-      }
-    }
+    // }
+    
   }
 
   render() {
@@ -193,6 +202,7 @@ renderData() {
             <tbody id="data">
               <tr className="header">{this.renderheader()}</tr>
               {this.renderData()}
+              
             </tbody>
             <td className="empty"></td>
           </table>
@@ -274,7 +284,6 @@ renderData() {
           <p className="total">
             {" "}
             Total{" "}
-            
           </p>
       <p className="total2">${total}</p>
       </div>
