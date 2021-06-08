@@ -9,8 +9,9 @@ let selected = false;
 let checkedCount = 0;
 let allChecked = false;
 let id;
-let arr = []
-
+let arr = [];
+let counter = 0;
+let here;
 class DataTable extends Component {
   constructor(props) {
     super(props);
@@ -22,7 +23,7 @@ class DataTable extends Component {
       firstName: "",
       lastName: "",
       minPaymentPercentage: "",
-      total:"0.00",
+      total: "0.00",
       checked: [],
     };
 
@@ -35,8 +36,6 @@ class DataTable extends Component {
     this.rowsCount = this.rowsCount.bind(this);
     this.one = this.one.bind(this);
     this.checkedFunc = this.checkedFunc.bind(this);
-
-
   }
 
   async getData() {
@@ -48,49 +47,46 @@ class DataTable extends Component {
     const head = Object.keys(this.state.dataForTable[0]);
     this.setState({ head });
   }
-  one(){
+  one() {
     let checkboxes = document.querySelectorAll('input[type="checkbox"]');
-      for (let checkbox of checkboxes) {
-      if (!checkbox.hasAttribute("checked") || checkbox.checked === false  ) {
-        this.setState({total: '0.00'})
-      }}
-  }
-
-  componentDidMount() {
-    this.getData();
-  // this.balanceCounter()
-
-  }
-
-  componentDidUpdate(prevState, prevProp){
-
-if (prevState.dataForTable !== this.state){
-  this.getData;
-  
-}
-
-
-}
-
-  deleteData(id) {
-    let checkbox = document.getElementsByClassName("checkboxes")
-   let arr = Array.from(checkbox)
-    for(let i = 0; i < arr.length; i++){
-      if (selected) {
-        // console.log('hi')
-        axios.delete(`api/data/${id}`, { id });
-        this.getData();
-        selected = false;
+    for (let checkbox of checkboxes) {
+      if (!checkbox.hasAttribute("checked") || checkbox.checked === false) {
+        this.setState({ total: "0.00" });
       }
     }
   }
 
-  rowsCount(){
-    this.setState({rows: this.state.dataForTable.length})
-    return this.state.rows
-  }  
+  componentDidMount() {
+    this.getData();
+    // this.balanceCounter()
+  }
 
-renderData() {
+  componentDidUpdate(prevState, prevProp) {
+    if (prevState.dataForTable !== this.state) {
+      this.getData;
+    }
+  }
+
+  deleteData(id) {
+    let checkbox = document.getElementsByClassName("checkboxes");
+    let arr = Array.from(checkbox);
+    for (let i = 0; i < arr.length; i++) {
+      if (selected) {
+        axios.delete(`api/data/${id}`, { id });
+        this.getData();
+        selected = false;
+        arr.splice(indexOf(data1), 1);
+        this.setState({ checked: arr });
+      }
+    }
+  }
+
+  rowsCount() {
+    this.setState({ rows: this.state.dataForTable.length });
+    return this.state.rows;
+  }
+
+  renderData() {
     return this.state.dataForTable.map((data) => {
       return (
         <tr key={data.id}>
@@ -99,20 +95,17 @@ renderData() {
             className="checkboxes"
             value={data.balance}
             onClick={() => {
-              this.checkedFunc(data)
+              this.checkedFunc(data);
               clicked = true;
-              id = data.id
-              
+              id = data.id;
+              data1 = data;
               // if(clicked) {this.setState({total: data.balance.toString()
               //   .replace(/\B(?=(\d{3})+(?!\d))/g, ",")})
               //   clicked = false
               //   checkedCount++
-                
+
               // }
-      
-          }
-          
-          } 
+            }}
           />
           <td>{data.creditorName}</td>
           <td>{data.firstName}</td>
@@ -123,53 +116,62 @@ renderData() {
       );
     });
   }
-checkedFunc(data){
-  
-if(!arr.includes(data)){
-    arr.push(data)
-  this.setState({checked: arr})
-  // this.setState({total: data.balance.toString()
-  //   .replace(/\B(?=(\d{3})+(?!\d))/g, ",")})
-} else {
-  arr.pop(data)
-  this.setState({total: '0.00'})
-  this.setState({checked: arr})
-}
+  checkedFunc(data) {
+    if (!arr.includes(data)) {
+      arr.push(data);
+      this.setState({ checked: arr });
 
+    } else {
+      let index = arr.indexOf(data);
+      arr.splice(index, 1);
+      this.setState({ total: "0.00" });
+      this.setState({ checked: arr });
+    }
 
-console.log('in new function', this.state.checked)
-this.balanceCounter()
-}
-  deselect(){
+   
+    this.balanceCounter();
+  }
+  deselect() {
     let checkboxes = document.querySelectorAll('input[type="checkbox"]');
-for(let i=0; i<checkboxes.length; i++){  
-                    if(checkboxes[i].type=='checkbox')  
-                    checkboxes[i].checked=false;  
-                } 
+    for (let i = 0; i < checkboxes.length; i++) {
+      if (checkboxes[i].type == "checkbox") checkboxes[i].checked = false;
+    }
   }
   toggle() {
+    let all = document.getElementsByClassName("selectAll");
+    let counter = 0;
     let checkboxes = document.querySelectorAll('input[type="checkbox"]');
+
     for (let checkbox of checkboxes) {
-      if (checkbox.checked) {
-        arr.pop(this.state.dataForTable)
-        this.setState({checked: arr})
-        checkbox.removeAttribute("checked");
-        allChecked =false
-        clicked = false
-        this.setState({total: '0.00'})
-      } else if (!checkbox.hasAttribute("checked") || checkbox.checked === false  ) {
-        arr.push(this.state.dataForTable)
-        this.setState({checked: arr})
-        checkbox.setAttribute("checked", "true");
-        // this.deselect()
-        allChecked = true
-        this.setState({total: this.state.dataForTable.balance })
+      if (!checkbox.checked && this.state.dataForTable.length >= 1) {
+        here = true;
+        checkbox.checked = true;
+        allChecked = false;
+        clicked = false;
+        this.setState({ total: "0.00" });
+        this.state.checked.length = this.state.dataForTable.length;
+      } else {
+        this.setState({ total: "0.00" });
+        this.state.checked.length = 0;
+
+        checkbox.checked = false;
+        allChecked = true;
       }
+    }
+    if (here) {
+      this.state.dataForTable.forEach((elem) => {
+        counter += parseInt(elem.balance);
+        this.setState({
+          total: counter
+            .toFixed(2)
+            .toString()
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+        });
+      });
     }
   }
   handleChange(event) {
-    this.setState({ [event.target.name]: event.target.value })
-    
+    this.setState({ [event.target.name]: event.target.value });
   }
   async handleSubmit(event, newdata) {
     event.preventDefault();
@@ -186,8 +188,9 @@ for(let i=0; i<checkboxes.length; i++){
                 type="checkbox"
                 className="selectAll"
                 onClick={() => {
+                  counter = 0;
                   this.toggle();
-                  this.balanceCounter()
+                  this.balanceCounter();
                 }}
               />{" "}
             </th>
@@ -213,29 +216,39 @@ for(let i=0; i<checkboxes.length; i++){
   }
 
   balanceCounter(data) {
-    let newTotal= 0.00
-// console.log('length', this.state.checked.length)
-this.state.checked.forEach((el)=>{
-  console.log('newline')
-   Number(el.balance)
-  console.log(Number(el.balance))
-  if (this.state.checked.length > 1){
-    newTotal += parseInt(el.balance)
-    console.log('heer', newTotal)
-  this.setState({total: newTotal.toFixed(2).toString()
-      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")})
-  } else if (this.state.checked.length <= 1) {
-    this.setState({total: parseInt(el.balance).toFixed(2).toString()
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ",")})
-  }
-  // this.setState({total: newTotal})
-})
+    let newTotal = 0.0;
+
+    this.state.checked.forEach((el) => {
+      parseInt(el.balance);
+      if (this.state.checked.length >= 1) {
+        newTotal += parseInt(el.balance);
+        this.setState({
+          total: newTotal
+            .toFixed(2)
+            .toString()
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+        });
+      } else if (this.state.checked.length < 1) {
+        this.setState({
+          total: parseInt(el.balance)
+            .toFixed(2)
+            .toString()
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+        });
+      }
+    });
   }
 
   render() {
     const { handleSubmit, handleChange, deleteData } = this;
-    const { creditorName, balance, firstName, lastName, minPaymentPercentage, total } =
-      this.state;
+    const {
+      creditorName,
+      balance,
+      firstName,
+      lastName,
+      minPaymentPercentage,
+      total,
+    } = this.state;
     return (
       <Container>
         <Table>
@@ -320,14 +333,11 @@ this.state.checked.forEach((el)=>{
           >
             Remove Debt
           </button>
-          <div className='maintotal'>
-          <p className="total">
-            {" "}
-            Total:{" "}
-          </p>
-      <p className="total2">${total}</p>
-      </div>
-          <div className='counts'>
+          <div className="maintotal">
+            <p className="total"> Total: </p>
+            <p className="total2">${total}</p>
+          </div>
+          <div className="counts">
             <p className="rowcount">
               {" "}
               Total Row Count: {this.state.dataForTable.length}{" "}
@@ -336,7 +346,6 @@ this.state.checked.forEach((el)=>{
               {" "}
               Checked Rows: {this.state.checked.length}{" "}
             </p>
-
           </div>
         </Table>
       </Container>
@@ -367,7 +376,7 @@ const Table = styled.div`
   .empty {
     border: 0px;
   }
-  .maintotal{
+  .maintotal {
     // background-color: red;
     display: flex;
     flex-direction: row;
@@ -380,7 +389,7 @@ const Table = styled.div`
     width: 50%;
     text-align: left;
   }
-  .total2{
+  .total2 {
     // flex-direction: column;
     // background-color: grey;
     // word-spacing: 350px;
@@ -401,12 +410,10 @@ const Table = styled.div`
     text-align: left;
     width: 50%;
     // background-color: grey;
-
   }
   .checkedcount {
     text-align: left;
     width: 50%;
     // background-color: grey;
-
   }
 `;
